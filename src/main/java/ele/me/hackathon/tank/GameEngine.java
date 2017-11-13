@@ -71,7 +71,7 @@ public class GameEngine {
             flagScore = 5;
             maxRound = 99;
             roundTimeout = 100;
-            this.gameOptions = new GameOptions(9, 1, 3, 5, 3, 5, 99, 100);
+            this.gameOptions = new GameOptions(noOfTanks, tankSpeed, shellSpeed, tankHP, tankScore, flagScore, maxRound, roundTimeout);
             playerAAddres = "127.0.0.1:10081";
             playerBAddres = "127.0.0.1:10082";
             return;
