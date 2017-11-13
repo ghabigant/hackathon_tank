@@ -42,24 +42,21 @@ public class GameEngine {
     private int roundTimeout;
     private String playerAAddres;
     private String playerBAddres;
+    private boolean flagGenerated = false;
+    private int noOfFlagGenerated = 0;
 
-    private static GameEngine instance = new GameEngine();
     private Map<String, PlayerServer.Client> clients;
     private Map<String, Player> players;
     private GameOptions gameOptions;
 
     public static void main(String[] args) throws TTransportException {
 
-        GameEngine engine = GameEngine.getInstance();
+        GameEngine engine = new GameEngine();
         engine.parseArgs(args);
         engine.startGame();
     }
 
-    private GameEngine() {
-    }
-
-    public static GameEngine getInstance() {
-        return instance;
+    public GameEngine() {
     }
 
     private void parseArgs(String[] args) {
@@ -120,17 +117,17 @@ public class GameEngine {
         return players;
     }
 
-    private Map<Integer, Tank> generateTanks() {
+    protected Map<Integer, Tank> generateTanks() {
         Map<Integer, Tank> tanks = new LinkedHashMap<>();
         int index = 0;
         int mapsize = map.size();
-        int n = (int) Math.sqrt(noOfTanks);
+        int n = (int) Math.sqrt(gameOptions.getNoOfTanks());
         for (int x = 1; x < n + 1; x++) {
             for (int y = 1; y < n + 1; y++) {
                 index++;
-                tanks.put(index, new Tank(index, new Position(x, y), Direction.RIGHT, tankSpeed, shellSpeed, tankHP));
-                tanks.put(index + noOfTanks,
-                        new Tank(index + noOfTanks, new Position(mapsize - x - 1, mapsize - y - 1), Direction.RIGHT, tankSpeed, shellSpeed, tankHP));
+                tanks.put(index, new Tank(index, new Position(x, y), Direction.DOWN, tankSpeed, shellSpeed, tankHP));
+                tanks.put(index + gameOptions.getNoOfTanks(),
+                        new Tank(index + gameOptions.getNoOfTanks(), new Position(mapsize - x - 1, mapsize - y - 1), Direction.UP, tankSpeed, shellSpeed, tankHP));
             }
         }
         return tanks;
@@ -172,6 +169,8 @@ public class GameEngine {
             if (stateMachine.gameOvered()) {
                 break;
             }
+
+            checkGenerateFlag(round);
         }
 
         Map<String, Integer> scores;
@@ -188,6 +187,25 @@ public class GameEngine {
         } else {
             System.out.println(playerBAddres + " wins the game!");
         }
+    }
+
+    protected void checkGenerateFlag(int round) {
+        if (flagGenerated == false) {
+            //generate if has past half rounds and no tank is lost
+            if (round > (gameOptions.getMaxRound() / 2 - 1) && stateMachine.getTankList().size() == 2 * gameOptions.getNoOfTanks()) {
+                System.out.println("Start to generate flag.");
+                flagGenerated = true;
+                stateMachine.generateFlag();
+                noOfFlagGenerated++;
+            }
+        } else {
+            //after first time, generate the flag repeatly but no more than one player's number of tanks
+            if ((round - gameOptions.getMaxRound() / 2) % (gameOptions.getMaxRound() / 2 / gameOptions.getNoOfTanks() + 1) == 0) {
+                stateMachine.generateFlag();
+                noOfFlagGenerated++;
+            }
+        }
+
     }
 
     private PlayerInteract buildPlayerInteract(String name, GameOptions gameOptions) {
@@ -248,4 +266,19 @@ public class GameEngine {
     }
     
 
+    public void setStateMachine(GameStateMachine stateMachine) {
+        this.stateMachine = stateMachine;
+    }
+
+    public void setGameOptions(GameOptions gameOptions) {
+        this.gameOptions = gameOptions;
+    }
+
+    public int getNoOfFlagGenerated() {
+        return noOfFlagGenerated;
+    }
+
+    public void setMap(GameMap map) {
+        this.map = map;
+    }
 }

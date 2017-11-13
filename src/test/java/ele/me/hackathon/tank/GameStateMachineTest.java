@@ -321,6 +321,7 @@ public class GameStateMachineTest {
         Shell shellB = new Shell(2, new Position(6, 5), Direction.UP, 2);
         stateMachine.getShells().add(shellA);
         stateMachine.getShells().add(shellB);
+        stateMachine.generateFlag();
 
         Map<String, GameState> state = stateMachine.reportState();
         assertEquals(2, state.size());
@@ -328,6 +329,7 @@ public class GameStateMachineTest {
         assertEquals("playerB shall see its own tank", 1, state.get("playerB").getTanks().size());
         assertEquals(1, state.get("playerA").getShells().size());
         assertEquals(1, state.get("playerB").getShells().size());
+        assertEquals(stateMachine.getFlagPos(), state.get("playerB").getFlagPos());
     }
 
     @Test

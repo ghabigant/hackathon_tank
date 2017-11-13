@@ -114,7 +114,11 @@ public class PlayerInteract {
         ele.me.hackathon.tank.player.GameState res = new ele.me.hackathon.tank.player.GameState();
         res.setTanks(convertTanks(state.getTanks()));
         res.setShells(convertShells(state.getShells()));
-        res.setYourFlags(state.getNoOfFlag());
+        res.setYourFlagNo(state.getYourFlagNo());
+        res.setEnemyFlagNo(state.getEnmeyFlagNo());
+        if(state.getFlagPos() != null) {
+            res.setFlagPos(convertPosition(state.getFlagPos()));
+        }
         return res;
     }
 
@@ -190,7 +194,6 @@ public class PlayerInteract {
 
     public static String toString(ele.me.hackathon.tank.player.GameState state) {
         java.lang.StringBuilder sb = new java.lang.StringBuilder("GameState(");
-        boolean first = true;
 
         sb.append("tanks:");
         if (state.getTanks() == null) {
@@ -203,10 +206,7 @@ public class PlayerInteract {
             });
             sb.append("]");
         }
-        first = false;
-        if (!first)
-            sb.append(", ");
-        sb.append("shells:");
+        sb.append(",shells:");
         if (state.getShells() == null) {
             sb.append("null");
         } else {
@@ -217,17 +217,14 @@ public class PlayerInteract {
             });
             sb.append("]");
         }
-        first = false;
-        if (!first)
-            sb.append(", ");
-        sb.append("yourFlags:");
-        sb.append(state.getYourFlags());
-        first = false;
-        if (!first)
-            sb.append(", ");
-        sb.append("enemyFlags:");
-        sb.append(state.getEnemyFlags());
-        first = false;
+        sb.append(",yourFlags:");
+        sb.append(state.getYourFlagNo());
+        sb.append(",enemyFlags:");
+        sb.append(state.getEnemyFlagNo());
+        if(state.isSetFlagPos()) {
+            sb.append(",flagPos:");
+            sb.append(state.getFlagPos());
+        }
         sb.append(")");
         return sb.toString();
     }

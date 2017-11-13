@@ -9,7 +9,6 @@ public class GameStateMachine {
     private GameMap map;
     private Map<Integer, Tank> tanks;
     private List<Shell> shells = new LinkedList<>();
-    private boolean flagExisting = false;
     private Position flagPos;
     private Map<String, Player> players;
     private GameOptions options;
@@ -128,8 +127,8 @@ public class GameStateMachine {
             withdrawUntilNoOverlap(tanksToMove);
 
             //check flag
-            tanksToMove.stream().filter(t -> flagExisting && flagPos.equals(t.getPos())).forEach(t -> {
-                flagExisting = false;
+            tanksToMove.stream().filter(t -> getFlagPos() != null && flagPos.equals(t.getPos())).forEach(t -> {
+                flagPos = null;
                 Player p = getPlayer(t);
                 p.captureFlag();
             });
@@ -161,14 +160,12 @@ public class GameStateMachine {
     }
 
     private List<Tank> findInvalidTanks() {
-        return getTanks().values().stream().filter(t -> invalidPostion(t.getPos())).collect(Collectors.toList());
+        return getTanks().values().stream().filter(t -> invalidPosition(t.getPos())).collect(Collectors.toList());
     }
 
-    private boolean invalidPostion(Position pos) {
+    private boolean invalidPosition(Position pos) {
         return map.isBarrier(pos) || existingMoreThanOneTanks(pos);
     }
-
-
 
     private Player getPlayer(Tank t) {
         return getPlayers().values().stream().filter(p -> p.getTanks().contains(t.getId())).findFirst().get();
@@ -193,8 +190,8 @@ public class GameStateMachine {
     }
 
     public Position generateFlag() {
-        flagPos = new Position(map.size() / 2 + 1, map.size() / 2 + 1);
-        flagExisting = true;
+        flagPos = new Position(map.size() / 2, map.size() / 2);
+        System.out.println("Generate flag at " + flagPos);
         return flagPos;
     }
 
@@ -220,8 +217,17 @@ public class GameStateMachine {
         //all shells which are visible
         getShells().stream().filter(s -> map.isVisible(s.getPos())).forEach(s -> playerState.getShells().add(s));
 
+        playerState.setYourFlagNo(getFlagNoByPlayer(playerName));
+        playerState.setEnmeyFlagNo(getEnemyFlagNo(playerName));
+        playerState.setFlagPos(getFlagPos());
+
+        System.out.println("________" + playerState);
         return playerState;
 
+    }
+
+    private int getEnemyFlagNo(String playerName) {
+        return getPlayers().values().stream().filter(p -> !p.getName().equals(playerName)).findFirst().get().getNoOfFlag();
     }
 
     private boolean tankVisible(Integer tankId) {
@@ -273,5 +279,9 @@ public class GameStateMachine {
 
     public long getPlayerTankNo(String playerAAddres) {
         return getPlayers().get(playerAAddres).getTanks().stream().filter(id -> tanks.containsKey(id)).count();
+    }
+
+    public Position getFlagPos() {
+        return flagPos;
     }
 }
